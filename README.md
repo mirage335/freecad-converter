@@ -8,7 +8,11 @@ Specifically developed in the hope of converting FreeCAD assemblies, OpenBuilds 
 
 # Usage
 
+From a directory with CAD models to convert...
+
 ./_freecad-converter
+
+Keep in mind this will *recusively* convert all CAD models found under this directory.
 
 As usual, ubiquitous_bash features may be used to install 'shortcuts' to ~/bin , install/test dependencies, etc.
 ./ubiquitous_bash.sh _test
@@ -25,6 +29,8 @@ Code is intentionally kept fairly simple and self-explanatory. Any code/function
 
 
 # Safety
+
+DANGER: Recursive program . Use with as much care as 'rm' or any other recursive delete/modify program .
 
 
 __Copyright__
