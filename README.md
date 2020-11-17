@@ -15,9 +15,13 @@ From a directory with CAD models to convert...
 Keep in mind this will *recusively* convert all CAD models found under this directory.
 
 As usual, ubiquitous_bash features may be used to install 'shortcuts' to ~/bin , install/test dependencies, etc.
+
 ./ubiquitous_bash.sh _test
+
 ./ubiquitous_bash.sh _setup
+
 ./ubiquitous_bash.sh _anchor
+
 
 # Design
 
