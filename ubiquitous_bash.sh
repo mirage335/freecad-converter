@@ -17299,6 +17299,7 @@ _package() {
 
 
 _test_prog() {
+	_getDep freecad
 	_getDep xvfb-run
 }
 
@@ -17616,7 +17617,7 @@ _find-freecad_converter() {
 	find . -type f -not -iname '*.fcstd.*' -not -iname '*.stp.*' -not -iname '*.step.*' -not -iname '*.stpZ.*' -not -iname '*.stpz.*' -not -iname '*.igs.*' -not -iname '*.iges.*' -not -iname '*.stl.*' -not -iname '*.obj.*' -not -iname '*.amf.*' -name "$1" -exec "$scriptAbsoluteLocation" _freecad_converter-multi {} {}"$2" \;
 }
 
-
+# ATTENTION: Override with 'ops' or similar!
 _freecad_converter() {
 	_request-mesh-freecad
 	sleep 1
@@ -17643,10 +17644,6 @@ _freecad_converter() {
 }
 _freecad-converter() {
 	_freecad_converter "$@"
-}
-
-_experiment() {
-	_find-freecad_converter '*.stl' '.step'
 }
 
 
