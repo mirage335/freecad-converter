@@ -2,7 +2,7 @@ Copyright (C) 2020 mirage335
 See the end of the file for license conditions.
 See license.txt for freecad-converter license conditions.
 
-CAD model converter using FreeCAD. Mostly intended to convert FreeCAD/STEP/STL libraries to formats used by special CAD/graphics engines.
+CAD model converter using FreeCAD. Mostly intended to convert FreeCAD/STEP/STL libraries to STEP/STL/OBJ formats used by special CAD/graphics engines.
 
 Specifically developed in the hope of converting FreeCAD assemblies, OpenBuilds STEP model library, and similar, to formats used by VR CAD assembly tools like MakeVR Pro and Gravity Sketch .
 
