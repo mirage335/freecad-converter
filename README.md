@@ -2,10 +2,26 @@ Copyright (C) 2020 mirage335
 See the end of the file for license conditions.
 See license.txt for freecad-converter license conditions.
 
+CAD model converter using FreeCAD. Mostly intended to convert FreeCAD/STEP/STL libraries to formats used by special CAD/graphics engines.
+
+Specifically developed in the hope of converting FreeCAD assemblies, OpenBuilds STEP model library, and similar, to formats used by VR CAD assembly tools like MakeVR Pro and Gravity Sketch .
+
 # Usage
 
+./_freecad-converter
+
+As usual, ubiquitous_bash features may be used to install 'shortcuts' to ~/bin , install/test dependencies, etc.
+./ubiquitous_bash.sh _test
+./ubiquitous_bash.sh _setup
+./ubiquitous_bash.sh _anchor
 
 # Design
+
+Bash 'heredoc' is used to create a temporary python script, which the normal 'freecad' binary can run with full GUI functionality, under 'xvfb' so the GPU does not interfere with other uses of the computer desktop.
+
+Function '_freecad-converter' is defined under '_prog/core.sh' .
+
+Code is intentionally kept fairly simple and self-explanatory. Any code/functions/variables placed in 'ops' or 'ops.sh' files will be 'included' by ubiquitous_bash.sh near the end of the script, overriding any code concatenated by 'compile.sh' .
 
 
 # Safety

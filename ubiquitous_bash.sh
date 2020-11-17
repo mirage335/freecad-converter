@@ -17339,6 +17339,10 @@ _freecad() {
 	_app "$@"
 }
 
+_freecad-xvfb() {
+	xvfb-run "$scriptAbsoluteLocation" _freecad "$@"
+}
+
 
 _request-mesh-freecad() {
 	_messagePlain_warn 'Mesh Deviation - 1mm (rough) , 2.50um (manufacturing)'
@@ -17346,14 +17350,15 @@ _request-mesh-freecad() {
 }
 
 
+#https://gist.github.com/hyOzd/2e75a9816cfabeb5b4aa
 _here_freecad_converter-header() {
 	cat << CZXWXcRMTo8EmM8i4d
 #!/usr/bin/freecad
 
 import sys
-sys.path.insert(0, '/usr/lib/freecad/')
-from FreeCAD import Base
-from math import *
+#sys.path.insert(0, '/usr/lib/freecad/')
+#from FreeCAD import Base
+#from math import *
 
 import os
 
@@ -17364,9 +17369,38 @@ import FreeCADGui
 
 import ImportGui
 
+CZXWXcRMTo8EmM8i4d
+}
+
+_here_freecad_converter-newDocument() {
+	cat << CZXWXcRMTo8EmM8i4d
 App.newDocument("Unnamed")
 App.setActiveDocument("Unnamed")
 App.ActiveDocument=App.getDocument("Unnamed")
+Gui.ActiveDocument=Gui.getDocument("Unnamed")
+Gui.activeDocument().activeView().viewDefaultOrientation()
+
+doc = FreeCAD.activeDocument()
+
+CZXWXcRMTo8EmM8i4d
+}
+
+_here_freecad_converter-openDocument() {
+	local currentInFile_basename
+	currentInFile_basename="Unnamed"
+	( [[ "$1" == *'.fcstd' ]] || [[ "$1" == *'.FCSTD' ]] || [[ "$1" == *'.FCStd' ]] ) && currentInFile_basename=$(basename "$1")
+	! ( [[ "$1" == *'.fcstd' ]] || [[ "$1" == *'.FCSTD' ]] || [[ "$1" == *'.FCStd' ]] ) && _messagePlain_bad 'fail' && return 1
+	currentInFile_basename=${currentInFile_basename//-/_}
+	currentInFile_basename=${currentInFile_basename%.*}
+	
+	
+	cat << CZXWXcRMTo8EmM8i4d
+FreeCAD.open(u"$1")
+App.setActiveDocument("$currentInFile_basename")
+App.ActiveDocument=App.getDocument("$currentInFile_basename")
+Gui.ActiveDocument=Gui.getDocument("$currentInFile_basename")
+
+doc = FreeCAD.activeDocument()
 
 CZXWXcRMTo8EmM8i4d
 }
@@ -17375,9 +17409,13 @@ _here_freecad_converter-objects() {
 	cat << CZXWXcRMTo8EmM8i4d
 
 __objs__=[]
+
+#for obj in doc.Objects:
+#	if obj.ViewObject.Visibility:
+#	    __objs__.append(obj)
+
 for obj in doc.Objects:
-	if obj.ViewObject.Visibility:
-	    __objs__.append(obj)
+	__objs__.append(obj)
 
 CZXWXcRMTo8EmM8i4d
 }
@@ -17385,7 +17423,7 @@ CZXWXcRMTo8EmM8i4d
 _here_freecad_converter-exit() {
 	cat << CZXWXcRMTo8EmM8i4d
 
-exit()
+exit(0)
 
 CZXWXcRMTo8EmM8i4d
 }
@@ -17409,18 +17447,59 @@ ImportGui.export(__objs__,u"$2")
 CZXWXcRMTo8EmM8i4d
 }
 
+_here_freecad_converter-Mesh_import() {
+	local currentInObject_basename
+	currentInObject_basename=$(basename "$1")
+	currentInObject_basename=${currentInObject_basename//-/_}
+	currentInObject_basename=${currentInObject_basename%.*}
+	
+	cat << CZXWXcRMTo8EmM8i4d
+
+Mesh.insert(u"$1","Unnamed")
+
+CZXWXcRMTo8EmM8i4d
+
+_safeEcho_newline 'FreeCAD.getDocument("Unnamed").addObject("Part::Feature","'"$currentInObject_basename"'001")'
+
+	cat << CZXWXcRMTo8EmM8i4d
+__shape__=Part.Shape()
+__shape__.makeShapeFromMesh(FreeCAD.getDocument("Unnamed").getObject("$currentInObject_basename").Mesh.Topology,0.100000)
+FreeCAD.getDocument("Unnamed").getObject("ShimFlexiblePreload_8mm001").Shape=__shape__
+FreeCAD.getDocument("Unnamed").getObject("ShimFlexiblePreload_8mm001").purgeTouched()
+del __shape__
 
 
-_here_freecad_converter-Mesh_export() {
-	import Mesh
-	Mesh.export(__objs__,u"$2")
+CZXWXcRMTo8EmM8i4d
 }
 
+_here_freecad_converter-Mesh_export() {
+	cat << CZXWXcRMTo8EmM8i4d
+
+Mesh.export(__objs__,u"$2")
+
+CZXWXcRMTo8EmM8i4d
+}
+
+_here_freecad_converter-saveDocument() {
+	local currentInFile_basename
+	currentInFile_basename="Unnamed"
+	( [[ "$1" == *'.fcstd' ]] || [[ "$1" == *'.FCSTD' ]] || [[ "$1" == *'.FCStd' ]] ) && currentInFile_basename=$(basename "$1")
+	currentInFile_basename=${currentInFile_basename//-/_}
+	currentInFile_basename=${currentInFile_basename%.*}
+	
+	cat << CZXWXcRMTo8EmM8i4d
+
+App.getDocument("$currentInFile_basename").saveAs(u"$2")
+Gui.SendMsgToActiveView("Save")
+CZXWXcRMTo8EmM8i4d
+
+}
 
 
 
 _here_freecad_converter-ImportGui_insert-ImportGui_export() {
 	_here_freecad_converter-header "$@"
+	_here_freecad_converter-newDocument "$@"
 	_here_freecad_converter-ImportGUI_insert "$@"
 	_here_freecad_converter-objects "$@"
 	_here_freecad_converter-ImportGUI_export "$@"
@@ -17433,7 +17512,7 @@ _freecad_converter_sequence-ImportGui_insert-ImportGui_export() {
 	
 	_here_freecad_converter-ImportGui_insert-ImportGui_export "$@" > "$safeTmp"/converter-temp.py
 	chmod u+x "$safeTmp"/converter-temp.py
-	"$safeTmp"/converter-temp.py
+	_freecad-xvfb "$safeTmp"/converter-temp.py
 	
 	_stop
 }
@@ -17446,6 +17525,7 @@ _freecad_converter-ImportGui_insert-ImportGui_export() {
 
 _here_freecad_converter-ImportGui_insert-Mesh_export() {
 	_here_freecad_converter-header "$@"
+	_here_freecad_converter-newDocument "$@"
 	_here_freecad_converter-ImportGUI_insert "$@"
 	_here_freecad_converter-objects "$@"
 	_here_freecad_converter-Mesh_export "$@"
@@ -17458,7 +17538,7 @@ _freecad_converter_sequence-ImportGui_insert-Mesh_export() {
 	
 	_here_freecad_converter-ImportGui_insert-Mesh_export "$@" > "$safeTmp"/converter-temp.py
 	chmod u+x "$safeTmp"/converter-temp.py
-	"$safeTmp"/converter-temp.py
+	_freecad-xvfb "$safeTmp"/converter-temp.py
 	
 	_stop
 }
@@ -17473,13 +17553,15 @@ _here_freecad_converter-multi() {
 	
 	if [[ "$1" == *'.step' ]]
 	then
+		_here_freecad_converter-newDocument "$@"
 		_here_freecad_converter-ImportGUI_insert "$@"
-	elif [[ "$1" == *'.stl' ]]
+	elif [[ "$1" == *'.stl' ]] || [[ "$1" == *'.obj' ]] || [[ "$1" == *'.amf' ]]
 	then
-		return 1
+		_here_freecad_converter-newDocument "$@"
+		_here_freecad_converter-Mesh_import "$@"
 	elif [[ "$1" == *'.fcstd' ]]
 	then
-		return 1
+		_here_freecad_converter-openDocument "$@"
 	else
 		return 1
 	fi
@@ -17488,13 +17570,13 @@ _here_freecad_converter-multi() {
 	
 	if [[ "$2" == *'.step' ]]
 	then
-		_here_freecad_converter-ImportGUI_export
-	elif [[ "$2" == *'.stl' ]]
+		_here_freecad_converter-ImportGUI_export "$@"
+	elif [[ "$2" == *'.stl' ]] || [[ "$2" == *'.obj' ]] || [[ "$2" == *'.amf' ]]
 	then
 		_here_freecad_converter-Mesh_export "$@"
 	elif [[ "$2" == *'.fcstd' ]]
 	then
-		return 1
+		_here_freecad_converter-saveDocument "$@"
 	else
 		return 1
 	fi
@@ -17505,6 +17587,8 @@ _here_freecad_converter-multi() {
 _freecad_converter_sequence-multi() {
 	_start
 	
+	rm -f "$2" > /dev/null 2>&1
+	
 	_messagePlain_nominal 'convert: '"$1"' '"$2"
 	#_request-mesh-freecad
 	
@@ -17513,19 +17597,57 @@ _freecad_converter_sequence-multi() {
 		_stop 1
 	fi
 	chmod u+x "$safeTmp"/converter-temp.py
-	"$safeTmp"/converter-temp.py
+	_freecad-xvfb "$safeTmp"/converter-temp.py
 	
 	_stop
 }
 _freecad_converter-multi() {
-	"$scriptAbsoluteLocation" _freecad_converter_sequence-multi "$@"
+	local currentInFile
+	currentInFile=$(_getAbsoluteLocation "$1")
+	local currentOutFile
+	currentOutFile=$(_getAbsoluteLocation "$2")
+	shift
+	shift
+	#_request-mesh-freecad
+	"$scriptAbsoluteLocation" _freecad_converter_sequence-multi "$currentInFile" "$currentOutFile"
+}
+
+_find-freecad_converter() {
+	find . -type f -not -iname '*.fcstd.*' -not -iname '*.stp.*' -not -iname '*.step.*' -not -iname '*.stpZ.*' -not -iname '*.stpz.*' -not -iname '*.igs.*' -not -iname '*.iges.*' -not -iname '*.stl.*' -not -iname '*.obj.*' -not -iname '*.amf.*' -name "$1" -exec "$scriptAbsoluteLocation" _freecad_converter-multi {} {}"$2" \;
 }
 
 
 _freecad_converter() {
-	find . -type f -name '*.step' -exec "$scriptAbsoluteLocation" _freecad_converter-multi {} {}.fcstd \;
+	_request-mesh-freecad
+	sleep 1
+	
+	#_find-freecad_converter '*.fcstd.' '.fcstd'
+	_find-freecad_converter '*.fcstd' '.step'
+	_find-freecad_converter '*.fcstd' '.stl'
+	_find-freecad_converter '*.fcstd' '.obj'
+	
+	_find-freecad_converter '*.step' '.fcstd'
+	#_find-freecad_converter '*.step' '.step'
+	_find-freecad_converter '*.step' '.stl'
+	_find-freecad_converter '*.step' '.obj'
+	
+	_find-freecad_converter '*.stl' '.fcstd'
+	_find-freecad_converter '*.stl' '.step'
+	#_find-freecad_converter '*.stl' '.stl'
+	_find-freecad_converter '*.stl' '.obj'
+	
+	_find-freecad_converter '*.obj' '.fcstd'
+	_find-freecad_converter '*.obj' '.step'
+	_find-freecad_converter '*.obj' '.stl'
+	#_find-freecad_converter '*.obj' '.obj'
+}
+_freecad-converter() {
+	_freecad_converter "$@"
 }
 
+_experiment() {
+	_find-freecad_converter '*.stl' '.step'
+}
 
 
 
