@@ -32,6 +32,23 @@ Function '_freecad-converter' is defined under '_prog/core.sh' .
 Code is intentionally kept fairly simple and self-explanatory. Any code/functions/variables placed in 'ops' or 'ops.sh' files will be 'included' by ubiquitous_bash.sh near the end of the script, overriding any code concatenated by 'compile.sh' .
 
 
+# Workarounds
+
+As exported, OBJ files may not include complete color information, as might be expected from typical STEP format ('with colors') export results. This may be due to assemblies created with 'a2plus' and similar not separately including every shape, among other possible causes. In any case, by default, complete color information is not guaranteed with OBJ export, partly because this would involve code that may be unreliable/complicated, and also because the results may be ultimately undesirable where only a single part is exported in most cases.
+
+Complex assemblies may be exported to OBJ with complete color information...
+
+* Latest FreeCAD compiled from repository source code required - 6e60870ebcb2df018adb7a1281c00dde87750f11 has been tested with full TazIntermediate model .
+* Select 'Part' workbench. Select all desired parts/shapes. Click icon to create 'Compound'.
+* Select 'Mesh Design' workbench. Select previously created 'Compound'. From top menu bar, 'Meshes -> Create mesh from shape'.
+* Meshing options - Standard, 1mm 'surface deviation', 15deg 'angular deviation', YES (checked) to 'Apply face colors to mesh', YES (checked) to 'Define segments by face colors' . Click 'OK'.
+* Hide previously created 'Compound'. Colors should still be visible, included on mesh object.
+* Select resulting mesh object. From top menu bar, 'Meshes -> Export mesh'. Save as type 'Alias Mesh (*.obj).
+
+Beware the resulting file may not show color information in some programs, such as MeshLab, but will in others, such as GravitySketch. Additionally, although the same format would not result in a '.mtl' file from the 'File -> Export' menu, in this case, it should.
+
+
+
 # Safety
 
 DANGER: Recursive program . Use with as much care as 'rm' or any other recursive delete/modify program .

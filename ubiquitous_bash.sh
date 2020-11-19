@@ -17481,6 +17481,15 @@ Mesh.export(__objs__,u"$2")
 CZXWXcRMTo8EmM8i4d
 }
 
+_here_freecad_converter-OBJ_export() {
+	cat << CZXWXcRMTo8EmM8i4d
+
+import importOBJ
+importOBJ.export(__objs__,u"$2")
+
+CZXWXcRMTo8EmM8i4d
+}
+
 _here_freecad_converter-saveDocument() {
 	local currentInFile_basename
 	currentInFile_basename="Unnamed"
@@ -17572,9 +17581,12 @@ _here_freecad_converter-multi() {
 	if [[ "$2" == *'.step' ]]
 	then
 		_here_freecad_converter-ImportGUI_export "$@"
-	elif [[ "$2" == *'.stl' ]] || [[ "$2" == *'.obj' ]] || [[ "$2" == *'.amf' ]]
+	elif [[ "$2" == *'.stl' ]] || [[ "$2" == *'.amf' ]]
 	then
 		_here_freecad_converter-Mesh_export "$@"
+	elif [[ "$2" == *'.obj' ]]
+	then
+		_here_freecad_converter-OBJ_export "$@"
 	elif [[ "$2" == *'.fcstd' ]]
 	then
 		_here_freecad_converter-saveDocument "$@"
@@ -17589,6 +17601,9 @@ _freecad_converter_sequence-multi() {
 	_start
 	
 	rm -f "$2" > /dev/null 2>&1
+	local currentOutFile_mtl
+	currentOutFile_mtl=${2%.*}.mtl
+	[[ "$currentOutFile_mtl" != "" ]] && [[ -e "$currentOutFile_mtl" ]] && rm -f "$currentOutFile_mtl" > /dev/null
 	
 	_messagePlain_nominal 'convert: '"$1"' '"$2"
 	#_request-mesh-freecad
@@ -17610,7 +17625,7 @@ _freecad_converter-multi() {
 	shift
 	shift
 	#_request-mesh-freecad
-	"$scriptAbsoluteLocation" _freecad_converter_sequence-multi "$currentInFile" "$currentOutFile"
+	_messagePlain_probe_cmd "$scriptAbsoluteLocation" _freecad_converter_sequence-multi "$currentInFile" "$currentOutFile"
 }
 
 _find-freecad_converter() {
