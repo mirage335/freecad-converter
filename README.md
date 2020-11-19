@@ -54,6 +54,15 @@ Beware the resulting file may not show color information in some programs, such 
 DANGER: Recursive program . Use with as much care as 'rm' or any other recursive delete/modify program .
 
 
+
+# Reference
+
+https://forum.freecadweb.org/viewtopic.php?t=37452
+
+https://forum.freecadweb.org/viewtopic.php?t=22840
+
+
+
 __Copyright__
 This file is part of freecad-converter.
 
